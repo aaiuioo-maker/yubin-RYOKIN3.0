@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>郵便料金計算</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ===== MAIN APP ===== */
+#app {
+    display: block;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    padding: 10px;
+    background-color: #F2F2F7;
+    min-height: 100vh;
+    color: #1C1C1E;
+}
+
+h1 {
+    font-size: 20px; text-align: center; margin: 5px 0 12px;
+    color: #1C1C1E; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.mail-icon { width: 24px; height: 24px; margin-right: 6px; }
+
+.card {
+    background: #FFFFFF; padding: 12px 16px; border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 10px;
+}
+
+.card h2 {
+    font-size: 15px; margin: 0 0 8px 0;
+    color: #8E8E93; font-weight: bold; letter-spacing: 0.5px;
+}
+
+label.select-label { display: block; margin-bottom: 8px; font-size: 15px; font-weight: bold; }
+
+select {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; padding: 10px 35px 10px 12px; margin-top: 4px;
+    border: 1px solid #E5E5EA; border-radius: 8px; font-size: 17px;
+    background-color: #FAFAFC; outline: none; font-weight: bold;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%228%22%20viewBox%3D%220%200%2014%2010%22%3E%3Cpolygon%20fill%3D%22%238E8E93%22%20points%3D%227%2010%200%200%2014%200%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat; background-position: right 12px center; background-size: 10px;
+}
+
+select:focus { border-color: #007AFF; background-color: #FFF; }
+select:disabled { background-color: #E5E5EA; opacity: 1; }
+
+.color-type-teikei { color: #007AFF !important; }
+.color-type-kikakunai { color: #FF9500 !important; }
+.color-type-kikakugai { color: #AF52DE !important; }
+.color-weight-light { color: #28A745 !important; }
+.color-weight-mid { color: #008080 !important; font-weight: bold; }
+.color-weight-heavy { color: #FF3B30 !important; font-weight: bold; }
+.color-weight-disabled { color: #8E8E93 !important; }
+
+/* ===== 合計金額ボックス（3カラム） ===== */
+.result-box {
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #007AFF, #0056D2);
+    color: white; border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.result-label {
+    font-size: 18px; font-weight: 800;
+    color: rgba(255,255,255,0.95);
+    white-space: nowrap; letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+
+.price {
+    flex: 1;
+    font-size: 30px; font-weight: 800;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    letter-spacing: -1px; line-height: 1.1;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.breakdown {
+    flex: 1;
+    font-size: 11px; color: rgba(255,255,255,0.85);
+    font-weight: 500; line-height: 1.5;
+    word-break: break-all; text-align: right;
+}
+
+.error {
+    color: #FF3B30; font-size: 14px; font-weight: bold;
+    background: rgba(255,255,255,0.9); padding: 4px 10px;
+    border-radius: 6px; display: inline-block;
+}
+
+.color-sokutatsu { color: #FF6B6B; font-weight: bold; }
+.color-tokutei { color: #0056D2; font-weight: bold; }
+.color-kani { color: #E3000F; font-weight: bold; }
+.color-genkin { color: #28A745; font-weight: bold; }
+.color-normal { font-weight: bold; color: #1C1C1E; }
+.price-tag { color: #8E8E93; font-size: 13px; font-weight: normal; }
+
+input[type="checkbox"], input[type="radio"] {
+    width: 20px; height: 20px; accent-color: #007AFF;
+    margin-left: 4px; margin-right: 10px;
+}
+
+.radio-label {
+    display: flex; align-items: center; padding: 8px 0;
+    border-bottom: 1px solid #F2F2F7; font-size: 16px;
+}
+
+.radio-label:last-child { border-bottom: none; padding-bottom: 0; }
+
+.input-yoshogaku {
+    background: #F2F2F7; padding: 12px; border-radius: 10px;
+    margin-top: 8px; display: none;
+}
+
+.input-row {
+    display: flex; align-items: center; justify-content: flex-end;
+    font-size: 15px; font-weight: bold; margin-bottom: 8px;
+}
+
+.input-yoshogaku input {
+    width: 120px; padding: 8px; font-size: 18px; font-weight: bold;
+    border: 2px solid #007AFF; border-radius: 6px; text-align: right;
+    margin: 0 8px; background-color: #FFF; color: #1C1C1E;
+}
+
+.calc-rule-text {
+    font-size: 13px; color: #1C1C1E; font-weight: bold; text-align: right;
+    background: #E5E5EA; padding: 8px; border-radius: 6px; margin-top: 8px; margin-bottom: 4px;
+}
+
+.calc-rule-note { font-size: 11px; color: #8E8E93; text-align: right; margin-bottom: 8px; }
+
+.custom-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+.custom-keypad button {
+    background: #FFFFFF; border: 1px solid #D1D1D6;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1); border-radius: 6px;
+    padding: 10px; font-size: 18px; font-weight: bold;
+    color: #1C1C1E; touch-action: manipulation;
+}
+
+.custom-keypad button:active { background: #E5E5EA; }
+.custom-keypad .btn-clear { background: #FF3B30; color: #FFF; border: none; line-height: 1.1; }
+.custom-keypad .btn-clear:active { background: #D70015; }
+</style>
+</head>
+<body>
+
+<!-- ===== MAIN APP ===== -->
+<div id="app">
+
+<h1>
+    <svg class="mail-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="flapGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#E1B382"/>
+                <stop offset="100%" stop-color="#C89666"/>
+            </linearGradient>
+            <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#C89666"/>
+                <stop offset="100%" stop-color="#9E734B"/>
+            </linearGradient>
+        </defs>
+        <path d="M2 8 C2 6.9 2.9 6 4 6 H20 C21.1 6 22 6.9 22 8 V18 C22 19.1 21.1 20 20 20 H4 C2.9 20 2 19.1 2 18 V8 Z" fill="url(#bodyGrad)"/>
+        <path d="M2 8 L12 14.5 L22 8 V18 C22 19.1 21.1 20 20 20 H4 C2.9 20 2 19.1 2 18 V8 Z" fill="#B07D54"/>
+        <path d="M2 8 L12 14.5 L22 8 C22 6.9 21.1 6 20 6 H4 C2.9 6 2 6.9 2 8 Z" fill="url(#flapGrad)"/>
+        <path d="M2 8 L12 14.5 L22 8" stroke="#8A5A33" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    郵便料金計算
+</h1>
+
+<!-- 郵便物の情報 -->
+<div class="card">
+    <h2>郵便物の情報</h2>
+    <label class="select-label">種類
+        <select id="mailType" class="color-type-teikei" onchange="handleSelectChange()">
+            <option value="teikei">定形郵便</option>
+            <option value="kikakunai">定形外 (規格内)</option>
+            <option value="kikakugai">定形外 (規格外)</option>
+        </select>
+    </label>
+    <label class="select-label">重さ
+        <select id="weight" class="color-weight-light" onchange="handleSelectChange()">
+            <option value="50">50gまで</option>
+            <option value="100">100gまで</option>
+            <option value="150">150gまで</option>
+            <option value="250">250gまで</option>
+            <option value="500">500gまで</option>
+            <option value="1000">1kgまで</option>
+            <option value="2000">2kgまで</option>
+            <option value="4000">4kgまで</option>
+        </select>
+    </label>
+</div>
+
+<!-- ★合計金額（3カラム: ラベル | 金額 | 詳細） -->
+<div class="result-box">
+    <div class="result-label">合計金額</div>
+    <div id="result" class="price">110 円</div>
+    <div id="breakdown" class="breakdown">基本 110円</div>
+</div>
+
+<!-- 特殊取扱 -->
+<div class="card">
+    <h2>特殊取扱</h2>
+
+    <label class="radio-label" style="border-bottom: 1px solid #E5E5EA; padding-bottom: 12px; margin-bottom: 4px;">
+        <input type="checkbox" id="sokutatsu" onchange="handleCheckChange()">
+        <span class="color-sokutatsu">速達 <span class="price-tag" id="sokutatsuLabel">(自動計算)</span></span>
+    </label>
+
+    <h2 style="margin-top: 12px;">記録・書留（1つのみ選択）</h2>
+
+    <label class="radio-label">
+        <input type="radio" name="kakitome" value="none" onchange="handleCheckChange()" checked>
+        <span class="color-normal">なし</span>
+    </label>
+    <label class="radio-label">
+        <input type="radio" name="kakitome" value="tokutei" onchange="handleCheckChange()">
+        <span class="color-tokutei">特定記録 <span class="price-tag">(+210円)</span></span>
+    </label>
+    <label class="radio-label">
+        <input type="radio" name="kakitome" value="kani" onchange="handleCheckChange()">
+        <span class="color-kani">簡易書留 <span class="price-tag">(+350円)</span></span>
+    </label>
+    <label class="radio-label">
+        <input type="radio" name="kakitome" value="ippan" onchange="handleCheckChange()">
+        <span class="color-normal">一般書留 <span class="price-tag">(+480円)</span></span>
+    </label>
+    <label class="radio-label" style="border-bottom: none;">
+        <input type="radio" name="kakitome" value="genkin" onchange="handleCheckChange()">
+        <span class="color-genkin">現金書留 <span class="price-tag">(+480円〜、金額指定)</span></span>
+    </label>
+
+    <div id="yoshogakuDiv" class="input-yoshogaku">
+        <div class="input-row">
+            送金額: <input type="text" id="yoshogaku" value="10000" readonly> 円
+        </div>
+        <div class="custom-keypad">
+            <button type="button" onclick="appendNum('1')">1</button>
+            <button type="button" onclick="appendNum('2')">2</button>
+            <button type="button" onclick="appendNum('3')">3</button>
+            <button type="button" onclick="appendNum('4')">4</button>
+            <button type="button" onclick="appendNum('5')">5</button>
+            <button type="button" onclick="appendNum('6')">6</button>
+            <button type="button" onclick="appendNum('7')">7</button>
+            <button type="button" onclick="appendNum('8')">8</button>
+            <button type="button" onclick="appendNum('9')">9</button>
+            <button type="button" class="btn-clear" onclick="clearNum()">C<br><span style="font-size:11px;font-weight:normal;">(クリア)</span></button>
+            <button type="button" onclick="appendNum('0')">0</button>
+            <button type="button" onclick="appendNum('00')">00</button>
+        </div>
+        <div id="genkinRuleBox" style="display:none;">
+            <div class="calc-rule-text" id="genkinCalcText">基本 480円</div>
+            <div class="calc-rule-note">※1万円まで480円、以降5,000円ごとに＋11円加算</div>
+        </div>
+    </div>
+</div>
+
+</div><!-- #app -->
+
+<script>
+/* ===== AUDIO ===== */
+let audioCtx;
+function initAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function playSound(type) {
+    initAudio();
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.connect(g); g.connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+    if (type === 'select') {
+        osc.type = 'square'; osc.frequency.setValueAtTime(880, now);
+        g.gain.setValueAtTime(0.05, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+        osc.start(now); osc.stop(now + 0.1);
+    } else if (type === 'check') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(660, now); osc.frequency.setValueAtTime(880, now + 0.05);
+        g.gain.setValueAtTime(0.05, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc.start(now); osc.stop(now + 0.15);
+    } else if (type === 'num') {
+        osc.type = 'triangle'; osc.frequency.setValueAtTime(500, now);
+        g.gain.setValueAtTime(0.08, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        osc.start(now); osc.stop(now + 0.05);
+    } else if (type === 'clear') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(880, now); osc.frequency.exponentialRampToValueAtTime(440, now + 0.1);
+        g.gain.setValueAtTime(0.05, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+        osc.start(now); osc.stop(now + 0.1);
+    } else if (type === 'error') {
+        osc.type = 'sawtooth'; osc.frequency.setValueAtTime(120, now);
+        g.gain.setValueAtTime(0.08, now); g.gain.linearRampToValueAtTime(0, now + 0.2);
+        osc.start(now); osc.stop(now + 0.2);
+    }
+}
+
+/* ===== HANDLERS ===== */
+function handleSelectChange() { playSound('select'); calculate(); }
+function handleCheckChange() { playSound('check'); calculate(); }
+
+function appendNum(num) {
+    playSound('num');
+    const input = document.getElementById('yoshogaku');
+    if (input.value === '0') {
+        input.value = (num === '00') ? '0' : num;
+    } else {
+        input.value += num;
+    }
+    calculate();
+}
+
+function clearNum() {
+    playSound('clear');
+    document.getElementById('yoshogaku').value = '0';
+    calculate();
+}
+
+let lastKakitome = 'none';
+let hasPlayedError = false;
+
+/* ===== CALCULATE ===== */
+function calculate() {
+    const typeEl = document.getElementById('mailType');
+    const weightEl = document.getElementById('weight');
+    const resultDiv = document.getElementById('result');
+    const breakdownDiv = document.getElementById('breakdown');
+    const sokutatsuLabel = document.getElementById('sokutatsuLabel');
+
+    const type = typeEl.value;
+
+    typeEl.className = '';
+    if (type === 'teikei') typeEl.classList.add('color-type-teikei');
+    else if (type === 'kikakunai') typeEl.classList.add('color-type-kikakunai');
+    else if (type === 'kikakugai') typeEl.classList.add('color-type-kikakugai');
+
+    if (type === 'teikei') {
+        weightEl.value = '50'; weightEl.disabled = true;
+    } else {
+        weightEl.disabled = false;
+    }
+
+    const weight = parseFloat(weightEl.value);
+
+    weightEl.className = '';
+    if (weightEl.disabled) weightEl.classList.add('color-weight-disabled');
+    else if (weight <= 100) weightEl.classList.add('color-weight-light');
+    else if (weight <= 500) weightEl.classList.add('color-weight-mid');
+    else weightEl.classList.add('color-weight-heavy');
+
+    let basePrice = 0, errorMsg = '';
+    const parts = [];
+
+    if (type === 'teikei') {
+        if (weight <= 50) basePrice = 110;
+        else errorMsg = '定形郵便は50gまで';
+    } else if (type === 'kikakunai') {
+        if (weight <= 50) basePrice = 140;
+        else if (weight <= 100) basePrice = 180;
+        else if (weight <= 150) basePrice = 270;
+        else if (weight <= 250) basePrice = 320;
+        else if (weight <= 500) basePrice = 510;
+        else if (weight <= 1000) basePrice = 750;
+        else errorMsg = '規格内は1kgまで';
+    } else if (type === 'kikakugai') {
+        if (weight <= 50) basePrice = 260;
+        else if (weight <= 100) basePrice = 290;
+        else if (weight <= 150) basePrice = 390;
+        else if (weight <= 250) basePrice = 450;
+        else if (weight <= 500) basePrice = 660;
+        else if (weight <= 1000) basePrice = 920;
+        else if (weight <= 2000) basePrice = 1350;
+        else if (weight <= 4000) basePrice = 1750;
+    }
+
+    if (basePrice > 0) parts.push('基本 ' + basePrice + '円');
+
+    let optionPrice = 0;
+
+    // 速達
+    if (document.getElementById('sokutatsu').checked) {
+        let sokuPrice, sokuDesc;
+        if (weight <= 250) { sokuPrice = 300; sokuDesc = '250gまで +300円'; }
+        else if (weight <= 1000) { sokuPrice = 400; sokuDesc = '1kgまで +400円'; }
+        else { sokuPrice = 690; sokuDesc = '4kgまで +690円'; }
+        optionPrice += sokuPrice;
+        parts.push('速達 ' + sokuPrice + '円');
+        sokutatsuLabel.innerText = '(' + sokuDesc + ')';
+        sokutatsuLabel.style.color = '#FF6B6B';
+    } else {
+        sokutatsuLabel.innerText = '(自動計算)';
+        sokutatsuLabel.style.color = '#8E8E93';
+    }
+
+    // 書留
+    const kakitome = document.querySelector('input[name="kakitome"]:checked').value;
+    const yoshogakuDiv = document.getElementById('yoshogakuDiv');
+    const genkinRuleBox = document.getElementById('genkinRuleBox');
+    const genkinCalcText = document.getElementById('genkinCalcText');
+
+    if (kakitome === 'genkin' && lastKakitome !== 'genkin') {
+        document.getElementById('yoshogaku').value = '10000';
+    }
+    lastKakitome = kakitome;
+
+    const yoshogaku = parseFloat(document.getElementById('yoshogaku').value) || 0;
+    yoshogakuDiv.style.display = (kakitome === 'genkin') ? 'block' : 'none';
+    genkinRuleBox.style.display = (kakitome === 'genkin') ? 'block' : 'none';
+
+    if (kakitome === 'tokutei') {
+        optionPrice += 210; parts.push('特定記録 210円');
+    } else if (kakitome === 'kani') {
+        optionPrice += 350; parts.push('簡易書留 350円');
+    } else if (kakitome === 'ippan') {
+        optionPrice += 480; parts.push('一般書留 480円');
+    } else if (kakitome === 'genkin') {
+        if (yoshogaku > 500000) {
+            errorMsg = '現金書留の上限は50万円までです';
+            genkinCalcText.innerText = '上限オーバー';
+            genkinCalcText.style.color = '#FF3B30';
+        } else {
+            let addPrice = 0;
+            if (yoshogaku > 10000) {
+                addPrice = Math.ceil((yoshogaku - 10000) / 5000) * 11;
+            }
+            const genkinTotal = 480 + addPrice;
+            genkinCalcText.innerText = addPrice > 0
+                ? '基本 480円 ＋ 加算 ' + addPrice + '円 ＝ ' + genkinTotal + '円'
+                : '基本 480円（加算なし）＝ ' + genkinTotal + '円';
+            genkinCalcText.style.color = '#1C1C1E';
+            optionPrice += genkinTotal;
+            parts.push('現金書留 ' + genkinTotal + '円');
+        }
+    }
+
+    if (errorMsg !== '') {
+        if (!hasPlayedError) { playSound('error'); hasPlayedError = true; }
+        resultDiv.innerHTML = '<span class="error">' + errorMsg + '</span>';
+        breakdownDiv.innerText = 'エラーを確認してください';
+        return;
+    }
+
+    hasPlayedError = false;
+    const total = basePrice + optionPrice;
+    resultDiv.innerText = total.toLocaleString() + ' 円';
+    breakdownDiv.innerText = parts.join(' ＋ ');
+}
+
+document.body.addEventListener('touchstart', initAudio, { once: true });
+window.onload = calculate;
+</script>
+</body>
+</html>
