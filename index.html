@@ -4,155 +4,259 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>郵便料金計算</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ===== MAIN APP ===== */
+:root {
+  --bg: #f4f4f8;
+  --surface: #ffffff;
+  --surface2: #f0f0f6;
+  --surface3: #e4e4ee;
+  --border: rgba(0,0,0,0.08);
+  --accent: #6c63ff;
+  --accent2: #ff6584;
+  --accent3: #1db36e;
+  --text: #1a1a2e;
+  --text-dim: #4a4a6a;
+  --text-faint: #9090aa;
+}
+
+body {
+  background: var(--bg);
+  font-family: 'Inter', 'Noto Sans JP', sans-serif;
+  color: var(--text);
+  min-height: 100vh;
+}
+
 #app {
-    display: block;
-    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-    padding: 10px;
-    background-color: #F2F2F7;
-    min-height: 100vh;
-    color: #1C1C1E;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
 }
 
+/* ── HEADER ── */
+.app-header {
+  text-align: center;
+  padding: 28px 0 24px;
+  position: relative;
+}
+.app-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 40px; height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 2px;
+}
 h1 {
-    font-size: 20px; text-align: center; margin: 5px 0 12px;
-    color: #1C1C1E; font-weight: 800;
-    display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 800;
+  letter-spacing: 1.5px;
+  background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.app-sub {
+  font-size: 11px; letter-spacing: 3px; color: var(--text-faint);
+  text-transform: uppercase; margin-top: 6px;
 }
 
-.mail-icon { width: 24px; height: 24px; margin-right: 6px; }
+.mail-icon { width: 28px; height: 28px; flex-shrink: 0; }
 
+/* ── CARDS ── */
 .card {
-    background: #FFFFFF; padding: 12px 16px; border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
 }
 
 .card h2 {
-    font-size: 15px; margin: 0 0 8px 0;
-    color: #8E8E93; font-weight: bold; letter-spacing: 0.5px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 16px;
 }
 
-label.select-label { display: block; margin-bottom: 8px; font-size: 15px; font-weight: bold; }
+/* ── SELECT ── */
+label.select-label {
+  display: block; margin-bottom: 14px;
+  font-size: 13px; font-weight: 600; color: var(--text-dim);
+  letter-spacing: 0.3px;
+}
+label.select-label:last-child { margin-bottom: 0; }
 
 select {
-    -webkit-appearance: none; appearance: none;
-    width: 100%; padding: 10px 35px 10px 12px; margin-top: 4px;
-    border: 1px solid #E5E5EA; border-radius: 8px; font-size: 17px;
-    background-color: #FAFAFC; outline: none; font-weight: bold;
-    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%228%22%20viewBox%3D%220%200%2014%2010%22%3E%3Cpolygon%20fill%3D%22%238E8E93%22%20points%3D%227%2010%200%200%2014%200%22%2F%3E%3C%2Fsvg%3E');
-    background-repeat: no-repeat; background-position: right 12px center; background-size: 10px;
+  -webkit-appearance: none; appearance: none;
+  width: 100%; padding: 13px 40px 13px 16px; margin-top: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 16px; font-weight: 700;
+  font-family: 'Inter', 'Noto Sans JP', sans-serif;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%228%22%20viewBox%3D%220%200%2014%2010%22%3E%3Cpolygon%20fill%3D%22%23606078%22%20points%3D%227%2010%200%200%2014%200%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat; background-position: right 14px center; background-size: 10px;
 }
+select option { background: #1a1a22; color: #f0f0f8; }
+select:focus { border-color: var(--accent); background-color: var(--surface3); }
+select:disabled { opacity: 0.4; cursor: not-allowed; }
 
-select:focus { border-color: #007AFF; background-color: #FFF; }
-select:disabled { background-color: #E5E5EA; opacity: 1; }
+.color-type-teikei { color: #6c63ff !important; }
+.color-type-kikakunai { color: #ff9f43 !important; }
+.color-type-kikakugai { color: #cd84f1 !important; }
+.color-weight-light { color: var(--accent3) !important; }
+.color-weight-mid { color: #48dbfb !important; font-weight: bold; }
+.color-weight-heavy { color: var(--accent2) !important; font-weight: bold; }
+.color-weight-disabled { color: var(--text-faint) !important; }
 
-.color-type-teikei { color: #007AFF !important; }
-.color-type-kikakunai { color: #FF9500 !important; }
-.color-type-kikakugai { color: #AF52DE !important; }
-.color-weight-light { color: #28A745 !important; }
-.color-weight-mid { color: #008080 !important; font-weight: bold; }
-.color-weight-heavy { color: #FF3B30 !important; font-weight: bold; }
-.color-weight-disabled { color: #8E8E93 !important; }
-
-/* ===== 合計金額ボックス（3カラム） ===== */
+/* ── RESULT BOX ── */
 .result-box {
-    padding: 10px 16px;
-    background: linear-gradient(135deg, #007AFF, #0056D2);
-    color: white; border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-    margin-bottom: 10px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
+  position: relative;
+  padding: 22px 20px;
+  background: linear-gradient(135deg, #6c63ff 0%, #4c46c0 100%);
+  border: none;
+  border-radius: 20px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  display: flex; flex-direction: row; align-items: center; gap: 12px;
+  box-shadow: 0 8px 24px rgba(108,99,255,0.35);
+}
+.result-box::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at top left, rgba(255,255,255,0.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+.result-box::after {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
 }
 
 .result-label {
-    font-size: 18px; font-weight: 800;
-    color: rgba(255,255,255,0.95);
-    white-space: nowrap; letter-spacing: 0.5px;
-    flex-shrink: 0;
+  font-size: 12px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: rgba(255,255,255,0.5);
+  white-space: nowrap; flex-shrink: 0;
+  writing-mode: initial;
 }
 
 .price {
-    flex: 1;
-    font-size: 30px; font-weight: 800;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    letter-spacing: -1px; line-height: 1.1;
-    text-align: center;
-    white-space: nowrap;
+  flex: 1;
+  font-size: 34px; font-weight: 800;
+  color: #fff;
+  text-align: center; white-space: nowrap;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  letter-spacing: -1px;
 }
 
 .breakdown {
-    flex: 1;
-    font-size: 11px; color: rgba(255,255,255,0.85);
-    font-weight: 500; line-height: 1.5;
-    word-break: break-all; text-align: right;
+  flex: 1;
+  font-size: 11px; color: rgba(255,255,255,0.55);
+  font-weight: 500; line-height: 1.7;
+  word-break: break-all; text-align: right;
 }
 
 .error {
-    color: #FF3B30; font-size: 14px; font-weight: bold;
-    background: rgba(255,255,255,0.9); padding: 4px 10px;
-    border-radius: 6px; display: inline-block;
+  color: #ff6b6b; font-size: 13px; font-weight: 700;
+  background: rgba(255,107,107,0.15); padding: 4px 12px;
+  border-radius: 8px; display: inline-block;
+  border: 1px solid rgba(255,107,107,0.3);
 }
 
-.color-sokutatsu { color: #FF6B6B; font-weight: bold; }
-.color-tokutei { color: #0056D2; font-weight: bold; }
-.color-kani { color: #E3000F; font-weight: bold; }
-.color-genkin { color: #28A745; font-weight: bold; }
-.color-normal { font-weight: bold; color: #1C1C1E; }
-.price-tag { color: #8E8E93; font-size: 13px; font-weight: normal; }
+/* ── RADIO / CHECKBOX ── */
+.color-sokutatsu { color: #ff6584; font-weight: 700; }
+.color-tokutei { color: #6c63ff; font-weight: 700; }
+.color-kani { color: #ff9f43; font-weight: 700; }
+.color-genkin { color: var(--accent3); font-weight: 700; }
+.color-normal { font-weight: 600; color: var(--text); }
+.price-tag { color: var(--text-faint); font-size: 12px; font-weight: 500; }
 
 input[type="checkbox"], input[type="radio"] {
-    width: 20px; height: 20px; accent-color: #007AFF;
-    margin-left: 4px; margin-right: 10px;
+  width: 20px; height: 20px; accent-color: var(--accent);
+  margin-left: 4px; margin-right: 12px;
+  flex-shrink: 0;
 }
 
 .radio-label {
-    display: flex; align-items: center; padding: 8px 0;
-    border-bottom: 1px solid #F2F2F7; font-size: 16px;
+  display: flex; align-items: center;
+  padding: 12px 0; font-size: 15px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
 }
-
 .radio-label:last-child { border-bottom: none; padding-bottom: 0; }
 
+/* ── 送金額 ── */
 .input-yoshogaku {
-    background: #F2F2F7; padding: 12px; border-radius: 10px;
-    margin-top: 8px; display: none;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 14px; border-radius: 14px;
+  margin-top: 12px; display: none;
 }
 
 .input-row {
-    display: flex; align-items: center; justify-content: flex-end;
-    font-size: 15px; font-weight: bold; margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: flex-end;
+  font-size: 14px; font-weight: 600; color: var(--text-dim);
+  margin-bottom: 12px;
 }
 
 .input-yoshogaku input {
-    width: 120px; padding: 8px; font-size: 18px; font-weight: bold;
-    border: 2px solid #007AFF; border-radius: 6px; text-align: right;
-    margin: 0 8px; background-color: #FFF; color: #1C1C1E;
+  width: 130px; padding: 9px 10px;
+  font-size: 20px; font-weight: 700;
+  background: var(--surface3);
+  border: 1.5px solid var(--accent);
+  border-radius: 10px; text-align: right;
+  margin: 0 10px; color: var(--text);
+  font-family: 'Inter', monospace;
 }
 
 .calc-rule-text {
-    font-size: 13px; color: #1C1C1E; font-weight: bold; text-align: right;
-    background: #E5E5EA; padding: 8px; border-radius: 6px; margin-top: 8px; margin-bottom: 4px;
+  font-size: 13px; color: var(--text); font-weight: 600;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  padding: 10px 12px; border-radius: 10px;
+  margin-top: 10px; margin-bottom: 4px;
+  text-align: right;
 }
+.calc-rule-note { font-size: 11px; color: var(--text-faint); text-align: right; margin-bottom: 8px; }
 
-.calc-rule-note { font-size: 11px; color: #8E8E93; text-align: right; margin-bottom: 8px; }
-
-.custom-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+/* ── KEYPAD ── */
+.custom-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 
 .custom-keypad button {
-    background: #FFFFFF; border: 1px solid #D1D1D6;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1); border-radius: 6px;
-    padding: 10px; font-size: 18px; font-weight: bold;
-    color: #1C1C1E; touch-action: manipulation;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 13px; font-size: 18px; font-weight: 700;
+  color: var(--text);
+  touch-action: manipulation;
+  transition: background 0.1s, transform 0.08s;
+  font-family: 'Inter', sans-serif;
 }
-
-.custom-keypad button:active { background: #E5E5EA; }
-.custom-keypad .btn-clear { background: #FF3B30; color: #FFF; border: none; line-height: 1.1; }
-.custom-keypad .btn-clear:active { background: #D70015; }
+.custom-keypad button:active {
+  background: rgba(108,99,255,0.3);
+  transform: scale(0.95);
+}
+.custom-keypad .btn-clear {
+  background: rgba(255,101,132,0.2);
+  border-color: rgba(255,101,132,0.3);
+  color: #ff6584; line-height: 1.1;
+}
+.custom-keypad .btn-clear:active { background: rgba(255,101,132,0.4); }
 </style>
 </head>
 <body>
@@ -160,25 +264,28 @@ input[type="checkbox"], input[type="radio"] {
 <!-- ===== MAIN APP ===== -->
 <div id="app">
 
+<div class="app-header">
 <h1>
     <svg class="mail-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <defs>
-            <linearGradient id="flapGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stop-color="#E1B382"/>
-                <stop offset="100%" stop-color="#C89666"/>
+            <linearGradient id="flapGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#a78bfa"/>
+                <stop offset="100%" stop-color="#6c63ff"/>
             </linearGradient>
-            <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stop-color="#C89666"/>
-                <stop offset="100%" stop-color="#9E734B"/>
+            <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6c63ff"/>
+                <stop offset="100%" stop-color="#4c46c0"/>
             </linearGradient>
         </defs>
         <path d="M2 8 C2 6.9 2.9 6 4 6 H20 C21.1 6 22 6.9 22 8 V18 C22 19.1 21.1 20 20 20 H4 C2.9 20 2 19.1 2 18 V8 Z" fill="url(#bodyGrad)"/>
-        <path d="M2 8 L12 14.5 L22 8 V18 C22 19.1 21.1 20 20 20 H4 C2.9 20 2 19.1 2 18 V8 Z" fill="#B07D54"/>
+        <path d="M2 8 L12 14.5 L22 8 V18 C22 19.1 21.1 20 20 20 H4 C2.9 20 2 19.1 2 18 V8 Z" fill="rgba(0,0,0,0.2)"/>
         <path d="M2 8 L12 14.5 L22 8 C22 6.9 21.1 6 20 6 H4 C2.9 6 2 6.9 2 8 Z" fill="url(#flapGrad)"/>
-        <path d="M2 8 L12 14.5 L22 8" stroke="#8A5A33" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M2 8 L12 14.5 L22 8" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-linecap="round" fill="none"/>
     </svg>
     郵便料金計算
 </h1>
+<p class="app-sub">Postage Calculator</p>
+</div>
 
 <!-- 郵便物の情報 -->
 <div class="card">
